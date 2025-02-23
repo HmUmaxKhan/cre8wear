@@ -1,4 +1,3 @@
-// src/components/home/SocialProof.js
 'use client';
 import { useInView } from 'react-intersection-observer';
 import Image from 'next/image';
@@ -11,30 +10,23 @@ export default function SocialProof() {
 
   const socialPosts = [
     {
-      image: '/social/post1.jpg',
-      username: '@fashionista',
-      likes: '2.5k',
-      platform: 'instagram'
+      image: '/social/post1.png',
+      username: '@cre8wear',
+      platform: 'facebook',
+      url: 'https://www.facebook.com/profile.php?id=61573424315636'
     },
     {
-      image: '/social/post1.jpg',
-      username: '@fashionista',
-      likes: '2.5k',
-      platform: 'instagram'
+      image: '/social/post2.png',
+      username: '@cre8nwear',
+      platform: 'instagram',
+      url: 'https://www.instagram.com/cre8nwear/'
     },
     {
-      image: '/social/post1.jpg',
-      username: '@fashionista',
-      likes: '2.5k',
-      platform: 'instagram'
-    },
-    {
-      image: '/social/post1.jpg',
-      username: '@fashionista',
-      likes: '2.5k',
-      platform: 'instagram'
-    },
-    // Add more social posts
+      image: '/social/post3.png',
+      username: '@cre8nwear',
+      platform: 'tiktok',
+      url: 'https://www.tiktok.com/@cre8nwear'
+    }
   ];
 
   return (
@@ -51,12 +43,15 @@ export default function SocialProof() {
 
         <div
           ref={ref}
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          className="flex justify-center items-center gap-8 max-w-4xl mx-auto"
         >
           {socialPosts.map((post, index) => (
-            <div
+            <a
               key={index}
-              className={`relative aspect-square overflow-hidden rounded-lg transform transition-all duration-500 ${
+              href={post.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`relative w-72 aspect-square overflow-hidden rounded-lg transform transition-all duration-500 ${
                 inView
                   ? 'translate-y-0 opacity-100'
                   : 'translate-y-10 opacity-0'
@@ -71,20 +66,12 @@ export default function SocialProof() {
               />
               <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-50 transition-opacity flex items-center justify-center opacity-0 hover:opacity-100">
                 <div className="text-white text-center">
-                  <p>{post.username}</p>
-                  <p>{post.likes} likes</p>
+                  <p className="font-semibold mb-2">{post.username}</p>
+                  <p className="text-sm capitalize">View on {post.platform}</p>
                 </div>
               </div>
-            </div>
+            </a>
           ))}
-        </div>
-
-        <div className="mt-12 flex justify-center space-x-6">
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
-            <span className="sr-only">Instagram</span>
-            {/* Instagram Icon */}
-          </a>
-          {/* Add more social media links */}
         </div>
       </div>
     </section>

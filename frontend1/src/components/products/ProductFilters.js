@@ -1,101 +1,106 @@
-// src/components/products/ProductFilters.js
 'use client';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-
-const categories = [
-  { id: 'all', name: 'All Products' },
-  { id: 'hoodies', name: 'Hoodies' },
-  { id: 'shirts', name: 'Shirts' },
-  { id: 't-shirts', name: 'T-Shirts' },
-  { id: 'jackets', name: 'Jackets' }
-];
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 export default function ProductFilters({
-  selectedCategory,
-  onCategoryChange,
-  priceRange,
-  onPriceRangeChange,
-  sortBy,
-  onSortChange
+    selectedCategory,
+    onCategoryChange,
+    priceRange,
+    onPriceRangeChange,
+    sortBy,
+    onSortChange
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+    const params = useParams();
+    const [categories, setCategories] = useState([]);
 
-  return (
-    <div className="bg-gray-300 text-black rounded-lg shadow-lg p-6">
-      {/* Mobile Filter Button */}
-      <button
-        className="lg:hidden w-full flex items-center justify-between p-2 bg-gray-100 rounded-lg mb-4"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span>Filters</span>
-        <svg
-          className={`w-5 h-5 transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
+    // Create slug from category name
+    const createSlug = (name) => {
+        return name.toLowerCase().replace(/\s+/g, '-');
+    };
 
-      {/* Filter Content */}
-      <div className={`space-y-6 ${isOpen ? 'block' : 'hidden lg:block'}`}>
-        {/* Categories */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Categories</h3>
-          <div className="space-y-2">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => onCategoryChange(category.id)}
-                className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
-                  selectedCategory === category.id
-                    ? 'bg-blue-600 text-white'
-                    : 'hover:bg-gray-100'
-                }`}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-        </div>
+    // Fetch categories
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch('http://localhost:5001/api/categories');
+                if (!response.ok) throw new Error('Failed to fetch categories');
+                
+                const data = await response.json();
+                const processedCategories = [
+                    { name: 'All Products', slug: 'all-products' },
+                    ...data.map(category => ({
+                        ...category,
+                        slug: createSlug(category.name)
+                    }))
+                ];
 
-        {/* Price Range */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Price Range</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between">
-              <span>${priceRange[0]}</span>
-              <span>${priceRange[1]}</span>
+                setCategories(processedCategories);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+
+        fetchCategories();
+    }, []);
+
+    return (
+        <div className="bg-gray-100 p-4 rounded-lg space-y-6">
+            {/* Categories */}
+            <div>
+                <h3 className="text-lg font-semibold mb-4">Categories</h3>
+                <div className="space-y-2">
+                    {categories.map((category) => (
+                        <Link
+                            key={category._id || category.slug}
+                            href={category.name === 'All Products' 
+                                ? '/products' 
+                                : `/products/${category.slug}`}
+                            className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                                (params?.category === category.slug || 
+                                 (category.name === 'All Products' && !params?.category))
+                                    ? 'bg-blue-500 text-white' 
+                                    : 'hover:bg-gray-200'
+                            }`}
+                        >
+                            {category.name}
+                        </Link>
+                    ))}
+                </div>
             </div>
-            <input
-              type="range"
-              min="0"
-              max="200"
-              step="10"
-              value={priceRange[1]}
-              onChange={(e) => onPriceRangeChange([priceRange[0], parseInt(e.target.value)])}
-              className="w-full"
-            />
-          </div>
-        </div>
 
-        {/* Sort By */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Sort By</h3>
-          <select
-            value={sortBy}
-            onChange={(e) => onSortChange(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-lg"
-          >
-            <option value="featured">Featured</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="newest">Newest</option>
-          </select>
+            {/* Price Range */}
+            <div>
+                <h3 className="text-lg font-semibold mb-4">Price Range</h3>
+                <div className="flex items-center space-x-4">
+                    <span>Rs {priceRange[0]}</span>
+                    <input
+                        type="range"
+                        min="0"
+                        max="10000"
+                        value={priceRange[1]}
+                        onChange={(e) => onPriceRangeChange([0, Number(e.target.value)])}
+                        className="flex-grow"
+                    />
+                    <span>Rs {priceRange[1]}</span>
+                </div>
+            </div>
+
+            {/* Sort By */}
+            <div>
+                <h3 className="text-lg font-semibold mb-4">Sort By</h3>
+                <select
+                    value={sortBy}
+                    onChange={(e) => onSortChange(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="featured">Featured</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="newest">Newest</option>
+                    <option value="rating">Best Rating</option>
+                </select>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }

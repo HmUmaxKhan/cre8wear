@@ -1,47 +1,37 @@
-// src/components/home/Categories.js
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
-const categories = [
-  {
-    id: 'hoodies',
-    name: 'Hoodies',
-    description: 'Premium comfort hoodies for every style',
-    image: '/categories/hoodies.png',
-    items: '20+ Items',
-    color: 'from-blue-500 to-blue-700'
-  },
-  {
-    id: 'shirts',
-    name: 'Shirts',
-    description: 'Classic and modern shirt designs',
-    image: '/categories/shirts.png',
-    items: '15+ Items',
-    color: 'from-green-500 to-green-700'
-  },
-  {
-    id: 't-shirts',
-    name: 'T-Shirts',
-    description: 'Comfortable and stylish t-shirts',
-    image: '/categories/t-shirts.png',
-    items: '25+ Items',
-    color: 'from-purple-500 to-purple-700'
-  },
-  {
-    id: 'jackets',
-    name: 'Jackets',
-    description: 'Premium quality designer jackets',
-    image: '/categories/jackets.png',
-    items: '10+ Items',
-    color: 'from-red-500 to-red-700'
-  }
-];
-
 export default function Categories() {
+  const [categories, setCategories] = useState([]);
   const [hoveredId, setHoveredId] = useState(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('http://localhost:5001/api/categories');
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+        const data = await response.json();
+        setCategories(data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Function to generate URL-friendly slug from category name
+  const generateSlug = (name) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  };
 
   return (
     <section className="py-20 bg-gray-50">
@@ -66,70 +56,50 @@ export default function Categories() {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className={`
+          flex flex-wrap justify-center gap-6
+          ${categories.length <= 3 ? 'max-w-5xl mx-auto' : 'max-w-7xl'}
+        `}>
           {categories.map((category, index) => (
             <motion.div
-              key={category.id}
+              key={category._id}
+              className="w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] max-w-sm"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
             >
               <Link 
-                href={`/products/${category.id}`}
+                href={`/products/${generateSlug(category.name)}`}
                 className="block"
-                onMouseEnter={() => setHoveredId(category.id)}
+                onMouseEnter={() => setHoveredId(category._id)}
                 onMouseLeave={() => setHoveredId(null)}
               >
                 <div className="relative group overflow-hidden rounded-2xl shadow-lg">
                   {/* Image Container */}
                   <div className="relative h-96 w-full overflow-hidden">
                     <Image
-                      src={category.image}
+                      src={category.image || '/categories/hoodies.png'}
                       alt={category.name}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                     {/* Gradient Overlay */}
-                    <div className={`absolute inset-0 bg-gradient-to-b ${category.color} opacity-60 transition-opacity duration-300 group-hover:opacity-70`} />
+                    <div className="absolute inset-0 bg-gradient-to-b from-blue-500 to-blue-700 opacity-60 transition-opacity duration-300 group-hover:opacity-70" />
                   </div>
 
                   {/* Content */}
                   <div className="absolute inset-0 p-6 flex flex-col justify-end">
                     <motion.div
                       animate={{
-                        y: hoveredId === category.id ? -5 : 0,
-                        opacity: hoveredId === category.id ? 1 : 0.9,
+                        y: hoveredId === category._id ? -5 : 0,
+                        opacity: hoveredId === category._id ? 1 : 0.9,
                       }}
                       transition={{ duration: 0.3 }}
                     >
                       <h3 className="text-2xl font-bold text-white mb-2">
                         {category.name}
                       </h3>
-                      <p className="text-white/90 text-sm mb-4">
-                        {category.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-white/80 text-sm">
-                          {category.items}
-                        </span>
-                        <span className="text-white flex items-center group-hover:translate-x-1 transition-transform">
-                          Shop Now 
-                          <svg
-                            className="w-4 h-4 ml-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 5l7 7-7 7"
-                            />
-                          </svg>
-                        </span>
-                      </div>
                     </motion.div>
                   </div>
                 </div>
@@ -138,7 +108,7 @@ export default function Categories() {
           ))}
         </div>
 
-        {/* Additional Categories Banner */}
+        {/* Customize Banner */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -155,7 +125,7 @@ export default function Categories() {
                     Customize Any Design
                   </h3>
                   <Link
-                    href="/customize"
+                    href="/coming"
                     className="inline-block bg-white text-gray-900 px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition-colors"
                   >
                     Start Designing

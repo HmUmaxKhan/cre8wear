@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300px" height="300px" viewBox="0 0 300 300" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>Product Placeholder</title>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect fill="#F0F0F0" x="0" y="0" width="300" height="300"></rect>
+        <text 
+            font-family="Arial, sans-serif" 
+            font-size="24" 
+            font-weight="normal" 
+            fill="#888888" 
+            x="50%" 
+            y="50%" 
+            text-anchor="middle" 
+            alignment-baseline="middle">
+            No Image
+        </text>
+    </g>
+</svg>

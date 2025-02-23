@@ -1,4 +1,3 @@
-// src/components/products/ProductCard.js
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -6,52 +5,96 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
 };
 
 export default function ProductCard({ product }) {
-  const [isHovered, setIsHovered] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    
+    // Improved image handling
+    const mainImage = product.variants?.[0]?.frontImage || '/default-placeholder.svg';
+    const categoryId = product.category?._id || 'uncategorized';
 
-  return (
-    <motion.div
-      variants={item}
-      whileHover={{ y: -5 }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      className="bg-gray-300 rounded-lg shadow-lg text-black overflow-hidden"
-    >
-      <Link href={`/products/${product.category}/${product.id}`}>
-        <div className="relative aspect-square">
-          <Image
-            src={product.images.main}
-            alt={product.name}
-            fill
-            className="object-cover transition-transform duration-300 transform hover:scale-105"
-          />
-          {isHovered && (
-            <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-              <span className="bg-inherit text-gray-900 px-4 py-2 rounded-full text-sm font-medium">
-                View Details
-              </span>
-            </div>
-          )}
-        </div>
-        <div className="p-4">
-          <h3 className="text-lg font-semibold">{product.name}</h3>
-          <p className="text-black text-xl font-semibold mt-1">${product.price}</p>
-          <div className="mt-2 flex flex-wrap gap-1">
-            {product.colors.map((color) => (
-              <div
-                key={color.code}
-                className="w-4 h-4 rounded-full border border-gray-300"
-                style={{ backgroundColor: color.code }}
-                title={color.name}
-              />
-            ))}
-          </div>
-        </div>
-      </Link>
-    </motion.div>
-  );
+    return (
+        <motion.div
+            variants={item}
+            whileHover={{ y: -5 }}
+            className="bg-gray-300 rounded-lg shadow-lg text-black overflow-hidden"
+            onHoverStart={() => setIsHovered(true)}
+            onHoverEnd={() => setIsHovered(false)}
+        >
+            <Link href={`/products/${categoryId}/${product._id}`}>
+                <div className="relative aspect-square">
+                    <Image
+                        src={mainImage}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-300"
+                        onError={(e) => {
+                            e.target.src = '/default-placeholder.svg';
+                        }}
+                    />
+                    {isHovered && (
+                        <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
+                            <span className="bg-white text-gray-900 px-4 py-2 rounded-full text-sm font-medium">
+                                View Details
+                            </span>
+                        </div>
+                    )}
+                </div>
+                <div className="p-4">
+                    <h3 className="text-lg font-semibold">{product.name}</h3>
+                    <p className="text-black text-xl font-semibold mt-1">
+                        Rs {product.price.toLocaleString()}
+                    </p>
+                    
+                    {/* Variants/Colors */}
+                    {product.variants && product.variants.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                            {product.variants.map((variant, index) => (
+                                <div
+                                    key={index}
+                                    className="w-4 h-4 rounded-full border border-gray-300"
+                                    style={{ 
+                                        backgroundColor: variant.color || '#000000',
+                                        backgroundImage: !variant.color 
+                                            ? 'repeating-linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc)' 
+                                            : 'none'
+                                    }}
+                                    title={variant.color || 'No color specified'}
+                                />
+                            ))}
+                        </div>
+                    )}
+                    
+                    {/* Rating */}
+                    {product.averageRating > 0 && (
+                        <div className="mt-2 flex items-center">
+                            <div className="flex text-yellow-400">
+                                {[...Array(5)].map((_, i) => (
+                                    <svg
+                                        key={i}
+                                        className={`w-4 h-4 ${
+                                            i < Math.round(product.averageRating) 
+                                                ? 'text-yellow-400' 
+                                                : 'text-gray-300'
+                                        }`}
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                ))}
+                            </div>
+                            <span className="ml-1 text-sm text-gray-600">
+                                ({product.reviewCount || 0})
+                            </span>
+                        </div>
+                    )}
+                </div>
+            </Link>
+        </motion.div>
+    );
 }

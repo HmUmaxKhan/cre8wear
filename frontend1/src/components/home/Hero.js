@@ -1,4 +1,3 @@
-// src/components/home/Hero.js
 'use client';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -7,22 +6,32 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const slideImages = [
   {
-    url: '/hero/hoodie-hero.png',
+    url: '/hero/19.png',
     alt: 'Custom Hoodie Design',
     category: 'Hoodies'
   },
   {
-    url: '/hero/tshirt-hero.png',
+    url: '/hero/20.png',
     alt: 'Custom T-Shirt Design',
     category: 'T-Shirts'
   },
   {
-    url: '/hero/jacket-hero.png',
+    url: '/hero/21.png',
     alt: 'Custom Jacket Design',
     category: 'Jackets'
   },
   {
-    url: '/hero/shirt-hero.png',
+    url: '/hero/26.png',
+    alt: 'Custom Shirt Design',
+    category: 'Shirts'
+  },
+  {
+    url: '/hero/27.png',
+    alt: 'Custom Shirt Design',
+    category: 'Shirts'
+  },
+  {
+    url: '/hero/28.png',
     alt: 'Custom Shirt Design',
     category: 'Shirts'
   }
@@ -44,36 +53,36 @@ export default function Hero() {
         {/* Content Container */}
         <div className="relative z-20 flex flex-col lg:flex-row h-full">
           {/* Left Content - Text */}
-          <div className="relative z-20 w-full lg:w-1/2 flex items-center px-4 sm:px-6 lg:px-12 py-20 lg:py-0">
+          <div className="relative z-20 w-full lg:w-1/2 flex items-center justify-center lg:justify-start px-4 sm:px-6 lg:px-12 py-20 lg:py-0">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="space-y-6 md:space-y-8"
+              className="space-y-6 md:space-y-8 text-center lg:text-left max-w-md"
             >
               <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white">
-                Create
-                <br />
                 Your
                 <br />
-                <span className="text-blue-500">Perfect</span>
-                <br />
                 Style
+                <br />
+                <span className="text-blue-500">Your</span>
+                <br />
+                <span className="text-blue-500">Canvas</span>
               </h1>
               <p className="text-lg md:text-xl text-gray-300 max-w-lg">
                 Design custom clothing that's uniquely you. Choose from our
                 premium collection and bring your vision to life.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link
-                  href="/customize"
-                  className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors text-center"
+                  href="/coming"
+                  className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors text-center inline-block"
                 >
                   Start Designing
                 </Link>
                 <Link
                   href="/products"
-                  className="bg-white text-gray-900 px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors text-center"
+                  className="bg-white text-gray-900 px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors text-center inline-block"
                 >
                   Browse Collection
                 </Link>
@@ -98,10 +107,9 @@ export default function Hero() {
                       src={slide.url}
                       alt={slide.alt}
                       fill
-                      className="object-cover w-auto h-40"
+                      className="object-cover w-full h-full"
                       priority={index === 0}
                     />
-                  
                   </motion.div>
                 )
               ))}

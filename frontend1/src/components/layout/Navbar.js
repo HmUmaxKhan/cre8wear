@@ -2,36 +2,83 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FaShoppingBag } from "react-icons/fa";
-import { FaUser } from "react-icons/fa";
-import { FaBars } from "react-icons/fa";
-import { FaTimes } from "react-icons/fa";
+import { FaBars, FaTimes, FaShoppingBag, FaClipboardList } from "react-icons/fa";
+
+const API_URL = "http://localhost:5001";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0); // Replace with actual cart state
+  const [cartCount, setCartCount] = useState(0);
+  const [categories, setCategories] = useState([]);
+
+  // Function to create slug from category name
+  const createSlug = (name) => {
+    return name.toLowerCase().replace(/\s+/g, '-');
+  };
+
+  // Update cart count
+  const updateCartCount = () => {
+    try {
+      const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+      setCartCount(cartItems.length);
+    } catch (error) {
+      console.error('Error updating cart count:', error);
+      setCartCount(0);
+    }
+  };
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/categories`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.json();
+        
+        // Transform the categories data to include slugs
+        const processedCategories = data.map(category => ({
+          ...category,
+          slug: createSlug(category.name)
+        }));
 
-  const navigation = [
-    { name: "Hoodies", href: "/products/hoodies" },
-    { name: "Shirts", href: "/products/shirts" },
-    { name: "T-Shirts", href: "/products/t-shirts" },
-    { name: "Jackets", href: "/products/jackets" },
-    { name: "Customize", href: "/customize" },
-  ];
+        setCategories(processedCategories);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        setCategories([]);
+      }
+    };
+
+    fetchCategories();
+
+    // Add scroll event listener
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    // Initial cart count and add event listeners
+    updateCartCount();
+    
+    // Listen for custom cart update event
+    const handleCartUpdate = () => {
+      updateCartCount();
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('storage', updateCartCount);
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('storage', updateCartCount);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
     <header
       className={`fixed w-full z-50 transition-all duration-300 ${
-        isScrolled ? "bg-white shadow-lg py-2" : "bg-transparent py-4"
+        isScrolled ? "bg-black shadow-lg py-2" : "bg-black py-4"
       }`}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -39,50 +86,57 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
             <div className="flex items-center space-x-2 cursor-pointer">
-              {isScrolled ? (
-                <Image
-                  src="/logo-white.png"
-                  alt="Cre8&Wear"
-                  width={150}
-                  height={150}
-                  className="w-auto h-12 transition-transform hover:scale-105 cursor-pointer"
-                />
-              ) : (
-                <Image
-                  src="/logo.png"
-                  alt="Cre8&Wear"
-                  width={150}
-                  height={150}
-                  className="w-auto h-12 transition-transform hover:scale-105 cursor-pointer"
-                />
-              )}
+              <Image
+                src={isScrolled ? "/logo-white.png" : "/logo.png"}
+                alt="Cre8&Wear"
+                width={150}
+                height={150}
+                className="w-auto h-12 transition-transform hover:scale-105 cursor-pointer"
+                priority
+              />
             </div>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => (
+            {categories.map((category) => (
               <Link
-                key={item.name}
-                href={item.href}
-                className={`relative text-sm font-medium transition-colors hover:text-blue-600 ${
-                  isScrolled ? "text-gray-900" : "text-white"
-                }
-                group`}
+                key={category._id}
+                href={`/products/${category.slug}`}
+                className="relative text-sm font-medium text-white transition-colors hover:text-blue-600 group"
               >
-                {item.name}
+                {category.name}
                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600 transform scale-x-0 origin-left transition-transform group-hover:scale-x-100" />
               </Link>
             ))}
+            <Link
+              href="/coming"
+              className="relative text-sm font-medium text-white transition-colors hover:text-blue-600 group"
+            >
+              Customize
+              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600 transform scale-x-0 origin-left transition-transform group-hover:scale-x-100" />
+            </Link>
+            <Link
+              href="/track-order"
+              className="relative text-sm font-medium text-white transition-colors hover:text-blue-600 group flex items-center"
+            >
+              <FaClipboardList className="mr-2" /> Track Order
+              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600 transform scale-x-0 origin-left transition-transform group-hover:scale-x-100" />
+            </Link>
           </div>
 
-          {/* Desktop Right Icons */}
-          <div className="hidden md:flex items-center space-x-6">
+          {/* Cart Icon */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link
+              href="/track-order"
+              className="text-white hover:text-blue-600 transition-colors flex items-center"
+              title="Track Order"
+            >
+              <FaClipboardList className="h-5 w-5 mr-1" />
+            </Link>
             <Link
               href="/cart"
-              className={`relative hover:text-blue-600 transition-colors ${
-                isScrolled ? "text-gray-900" : "text-white"
-              }`}
+              className="relative text-white hover:text-blue-600 transition-colors"
             >
               <FaShoppingBag className="h-6 w-6" />
               {cartCount > 0 && (
@@ -91,27 +145,17 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-            <Link
-              href="/auth/login"
-              className={`hover:text-blue-600 transition-colors ${
-                isScrolled ? "text-gray-900" : "text-white"
-              }`}
-            >
-              <FaUser className="h-6 w-6" />
-            </Link>
           </div>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`md:hidden hover:text-blue-600 transition-colors ${
-              isScrolled ? "text-gray-900" : "text-white"
-            }`}
+            className="md:hidden text-white hover:text-blue-600 transition-colors"
           >
             {isMobileMenuOpen ? (
-              <FaTimes className="h-6 w-6" />
+              <FaTimes className=" h-6 w-6" />
             ) : (
-              <FaBars className="h-6 w-6" />
+              <FaBars className="mr-6 h-6 w-6" />
             )}
           </button>
         </div>
@@ -130,32 +174,42 @@ export default function Navbar() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 space-y-6">
-              {navigation.map((item) => (
+              {categories.map((category) => (
                 <Link
-                  key={item.name}
-                  href={item.href}
+                  key={category._id}
+                  href={`/products/${category.slug}`}
                   className="block text-gray-900 hover:text-blue-600 transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  {item.name}
+                  {category.name}
                 </Link>
               ))}
+              
+              <Link
+                href="/coming"
+                className="block text-gray-900 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Customize
+              </Link>
+              
+              <Link
+                href="/track-order"
+                className="block text-gray-900 hover:text-blue-600 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Track Order
+              </Link>
+              
               <hr className="border-gray-200" />
+              
               <Link
                 href="/cart"
                 className="flex items-center text-gray-900 hover:text-blue-600 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <FaShoppingBag className="h-6 w-6 mr-2" />
-                Cart ({cartCount})
-              </Link>
-              <Link
-                href="/auth/login"
-                className="flex items-center text-gray-900 hover:text-blue-600 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <FaUser className="h-6 w-6 mr-2" />
-                Login
+                Cart {cartCount > 0 && `(${cartCount})`}
               </Link>
             </div>
           </div>

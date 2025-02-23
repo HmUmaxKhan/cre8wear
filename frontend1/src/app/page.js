@@ -17,9 +17,7 @@ export default function Home() {
       <Features />
       <Categories />
       <FeaturedProducts />
-      <Testimonials />
       <SocialProof />
-      <Newsletter />
     </main>
   );
 }
